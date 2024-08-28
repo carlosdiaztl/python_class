@@ -117,8 +117,8 @@ libro1 = Libro(fake.catch_phrase(), fake.name(), fake.isbn13(), True)
 libro2 = Libro(fake.catch_phrase(), fake.name(), fake.isbn13(), True)
 libro3 = Libro("1984", "George Orwell", "1234567890", True)
 
-# biblioteca.agregar_libro(libro1)
-# biblioteca.agregar_libro(libro2)
+biblioteca.agregar_libro(libro1)
+biblioteca.agregar_libro(libro2)
 biblioteca.prestar_libro(libro3)
 
 biblioteca.mostrar_libros()
