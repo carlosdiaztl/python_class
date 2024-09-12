@@ -1,8 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import ttk
 import mysql.connector
 from mysql.connector import Error
-
+from tkinter import CENTER
 # Función para conectar a la base de datos
 def connect_to_db():
     try:
@@ -50,11 +51,38 @@ def insert_record():
         cursor.execute(query, values)
         connection.commit()
         messagebox.showinfo("Éxito", "Usuario registrado correctamente")
+        update_treeview()
     except Error as e:
         messagebox.showerror("Error", f"No se pudo insertar el registro: {e}")
     finally:
         connection.close()
 
+def fetch_all_records():
+    connection = connect_to_db()
+    if connection is None:
+        return []
+    try:
+        cursor = connection.cursor()
+        query = "SELECT * FROM usuarios"
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        return rows
+    except Error as e:
+        messagebox.showerror("Error", f"No se pudo recuperar los registros: {e}")
+        return []
+    finally:
+        connection.close()
+
+def update_treeview():
+    records = fetch_all_records()
+    
+    # Limpiar el Treeview existente
+    for row in tabla.get_children():
+        tabla.delete(row)
+    
+    # Insertar datos en el Treeview
+    for row in records:
+        tabla.insert("", tk.END, values=row)
 # Función para buscar un registro
 def search_record():
     connection = connect_to_db()
@@ -93,6 +121,7 @@ def update_record():
         cursor.execute(query, values)
         connection.commit()
         messagebox.showinfo("Éxito", "Usuario actualizado correctamente")
+        update_treeview()
     except Error as e:
         messagebox.showerror("Error", f"No se pudo actualizar el registro: {e}")
     finally:
@@ -113,6 +142,7 @@ def delete_record():
         if cursor.rowcount > 0:
             clear_form()
             messagebox.showinfo("Éxito", "Usuario eliminado correctamente")
+            update_treeview()
         else:
             messagebox.showinfo("Información", "No se encontró un usuario con ese documento")
 
@@ -129,6 +159,7 @@ def clear_form():
     surname_entry.delete(0, tk.END)
     phone_entry.delete(0, tk.END)
     address_entry.delete(0, tk.END)
+    update_treeview()
 
 # Crear la tabla al iniciar
 create_table_if_not_exists()
@@ -163,11 +194,6 @@ tk.Label(root, text="Dirección", fg=label_color).grid(row=4, column=0, padx=10,
 address_entry = tk.Entry(root)
 address_entry.grid(row=4, column=1, padx=10, pady=10)
 
-# Colores
-label_color = "#007BFF"  # Color azul para las etiquetas
-button_bg_color = "white"  # Color blanco para los botones
-button_fg_color = "#000000"  # Color negro oscuro para el texto de los botones
-
 # Crear botones con fondo blanco y letra negra
 tk.Button(root, text="Insertar", command=insert_record, bg=button_bg_color, fg=button_fg_color).grid(row=5, column=0, padx=10, pady=10)
 tk.Button(root, text="Buscar", command=search_record, bg=button_bg_color, fg=button_fg_color).grid(row=5, column=1, padx=10, pady=10)
@@ -175,6 +201,18 @@ tk.Button(root, text="Modificar", command=update_record, bg=button_bg_color, fg=
 tk.Button(root, text="Eliminar", command=delete_record, bg=button_bg_color, fg=button_fg_color).grid(row=6, column=1, padx=10, pady=10)
 tk.Button(root, text="Limpiar", command=clear_form, bg=button_bg_color, fg=button_fg_color).grid(row=7, column=0, padx=10, pady=10, columnspan=2)
 
+# Configuración de la tabla (Treeview)
+tabla = ttk.Treeview(root, height=10, columns=("doc", "name", "surname", "phone", "address"), show="headings")
+tabla.grid(row=8, column=0, columnspan=2, padx=10, pady=10)
 
-# Iniciar la aplicación
+# Definir encabezados de la tabla
+tabla.heading("doc", text="Documento", anchor=CENTER)
+tabla.heading("name", text="Nombres", anchor=CENTER)
+tabla.heading("surname", text="Apellidos", anchor=CENTER)
+tabla.heading("phone", text="Teléfono", anchor=CENTER)
+tabla.heading("address", text="Dirección", anchor=CENTER)
+
 root.mainloop()
+
+
+
